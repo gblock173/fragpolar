@@ -1,0 +1,78 @@
+# fragpolar configuration (example).
+# Copy to config/config.yaml (or point FRAGPOLAR_CONFIG to another file) and replace every <PLACEHOLDER>.
+# Values left as <PLACEHOLDER> are treated as "not set"; a script that needs such a key stops with a clear message.
+# No sample identifiers, clinical data or result tables are distributed with this repository.
+
+paths:
+  # ---------------------------------------------------------------- input roots
+  data_dir: <PATH_TO_DATA_DIR>                 # analysis data (marker matrices, cohort tables, strata definition); see `inputs`
+  reference_dir: <PATH_TO_REFERENCE_DIR>       # marker z-score references, healthy direction, strata markers, cohort matrices
+  extraction_dir: <PATH_TO_EXTRACTION_DIR>     # marker regions and extraction manifests
+  cpg_calls_dir: <PATH_TO_CPG_CALLS>           # <sample>.cpg_calls.parquet written by src/fragpolar/vendor/extract_cpg_calls.py
+  hepatitis_cpg_calls_dir: <PATH_TO_HEPATITIS_CPG_CALLS>
+  marker_table_tsv: <PATH_TO_MARKER_TABLE_TSV> # 190,218 primary markers, for extract_cpg_calls.py --markers
+  reference_fasta: <PATH_TO_HG38_FASTA>
+  cpg_bed: <PATH_TO_HG38_CPG_BED_GZ>           # wgbstools hg38 CpG index (chrom, 1-based position, global CpG index)
+  pat_dir: <PATH_TO_NORMAL_CELL_PAT_DIR>       # Loyfer et al. hg38 PAT files
+  pbmc_qc_dir: <PATH_TO_PBMC_QC_SCORES_DIR>    # healthy_5fold_oof_pbmc_scores.tsv, cancer_5fold_consensus_pbmc_scores.tsv
+  pbmc_input_audit_dir: <PATH_TO_PBMC_INPUT_AUDIT_DIR>   # pbmc_library_donor_manifest.tsv, raw_input_availability.tsv
+  sample_provenance_tsv: <PATH_TO_SAMPLE_PROVENANCE_TSV> # sample_id, source (raw_CpG_calls | columns.legacy_source_label)
+  concept_examples_dir: <PATH_TO_CONCEPT_EXAMPLES_DIR>   # constructed example tables of Fig. 1a, 1c
+  prior_source_data_dir: <PATH_TO_PRIOR_SOURCE_DATA_DIR> # stored source data of Supplementary Fig. 2
+  gallery_values_tsv: <OPTIONAL_PATH_TO_GALLERY_VALUES_TSV>   # optional cross-check of Fig. 1b
+  # ---------------------------------------------------------------- outputs
+  # Each pipeline writes to <work_dir>/<package>/{results,data,work,figures,logs}; packages: group_effects, train_rebuild,
+  # fpi_k, generators, direct_fragments, tumour_hepatitis_age, pbmc, component_origin, mixture_and_length.
+  work_dir: <PATH_TO_WORK_DIR>
+  figure_dir: <PATH_TO_FIGURE_OUTPUT_DIR>      # Figure_<n>.*, source_data/, supp/, supp/source_data/
+
+inputs:
+  # Input files and folders. Relative values are taken under paths.data_dir; "{reference_dir}" and "{extraction_dir}"
+  # expand to those paths. The names on the right are the suggested layout; point them to your own files if they differ.
+  marker_matrices: marker_matrices                         # {mu,U,B,strictM,strictU,n,mean_K,mean_fraglen,mean_complete_span}.f32, samples x markers
+  marker_matrix_samples: marker_matrices/samples.tsv        # row order of the matrices (AnalysisID, group, split, suff, source)
+  marker_annotation: marker_matrices/marker_annotation.parquet   # marker_id, chrom, start, end, band, annot, genomic_context, atlas_*,
+                                                            # baseline_fullTrain, <columns.healthy_direction>
+  generator_panel: marker_matrices/generator_panel.tsv      # 10,000-marker panel (marker_id)
+  strata_definition: strata_definition.tsv                  # stratum, baseline, axis, annotation, n_markers, used
+  samples_table: cohort_tables/samples.tsv                  # AnalysisID, group, split, set, run, era, age, sex, log_depth, cv_fold, source
+  hepatitis_samples_table: cohort_tables/hepatitis_samples.tsv   # AnalysisID, suff (sufficient-statistics parquet of each hepatitis sample)
+  tumour_fraction_table: cohort_tables/tumour_fraction.tsv  # AnalysisID, f, label (CNV tumour fraction)
+  panel_scores: cohort_tables/panel_scores.tsv              # AnalysisID, panel_PDR_30, panel_FDRP_30, panel_B_30
+  prior_strata_effects: prior_tables/strata_effects.tsv     # earlier analysis tables, used only for parity checks
+  prior_group_effects: prior_tables/group_effects.tsv
+  prior_panel_cells: prior_tables/panel_cells.tsv
+  prior_perturbation_response: prior_tables/perturbation_response.tsv
+  prior_strata_samples: prior_tables/strata_samples.parquet
+  prior_engine_manifest: prior_engine/manifest.tsv          # earlier engine run: sid, role, matched_to (Test matched pairs)
+  prior_engine_dir: prior_engine/samples                    # <sample>/meta.json with K histograms
+  span_quantiles: prior_engine/healthy_span_quantiles.npy   # tissue 'trim' mode of the engine only
+  prior_tissue_group_effects: prior_tables/tissue_group_effects.tsv   # Fig. 4a (tumour vs adjacent tissue)
+  prior_cnv_effect_summary: prior_tables/cnv_effect_summary.tsv       # Fig. 4b, Supplementary Fig. 11
+  z_reference_dir: "{reference_dir}/z_reference"            # <feature>.npz (center, scale; Train healthy)
+  healthy_direction_npy: "{reference_dir}/healthy_direction.npy"
+  strata_markers: "{reference_dir}/strata_markers.parquet"
+  reference_strata_definition: "{reference_dir}/strata_definition.tsv"
+  cohort_matrix_samples: "{reference_dir}/cohort_samples.tsv"
+  cohort_matrices: "{reference_dir}/cohort_matrices"        # cohort__<feature>.f32
+  marker_regions: "{extraction_dir}/marker_regions.parquet" # marker_id, start, end, primary_eligible
+  extraction_regions: "{extraction_dir}/extraction_regions.parquet"
+  extraction_manifest: "{extraction_dir}/sample_manifest.tsv"
+  extraction_pilot_manifest: "{extraction_dir}/pilot_manifest.tsv"
+  prior_sufficient_dir: "{extraction_dir}/prior_sufficient" # earlier per-sample sufficient statistics (parity check)
+
+columns:
+  # Generic name used in the code -> column name / label in your files (omit a key if the names already match).
+  healthy_direction: healthy_direction      # marker annotation column: 1 if fully methylated fragments are opposite to healthy
+  hof_feature: hof                          # file stem and table label of the HOF feature in z_reference_dir / cohort_matrices / prior tables
+  legacy_source_label: reused_legacy        # provenance label of samples whose statistics were reused (must start with "reuse")
+
+sample_lists:
+  # Plain-text files, one sample identifier per line (not distributed).
+  hepatitis_included: <PATH_TO_HEPATITIS_IDS_TXT>          # hepatitis samples that met the sample-quality criteria (n = 10)
+  same_site_hcc: <PATH_TO_SAME_SITE_HCC_IDS_TXT>           # control-composition sensitivity: HCC and healthy samples from the
+  same_site_healthy: <PATH_TO_SAME_SITE_HEALTHY_IDS_TXT>   #   same collection site (combined with params.same_site_era)
+  generator_base: <PATH_TO_GENERATOR_BASE_IDS_TXT>         # 20 Train healthy samples chosen by identifier order only
+
+params:
+  same_site_era: <ERA_CODE>                 # collection-year code of the same-site subset

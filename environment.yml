@@ -1,0 +1,14 @@
+# Main analysis environment (versions as installed on the analysis server where the pipelines and figures were run)
+name: fragpolar
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.14
+  - numpy=2.3.3
+  - pandas=2.3.3
+  - scipy=1.16.2
+  - pyarrow=21.0.0
+  - matplotlib=3.10.7
+  - numba=0.65.1          # pipelines/08_component_origin/co2_pat_extract.py
+  - pyyaml=6.0.3
+  - pytest=9.0.3

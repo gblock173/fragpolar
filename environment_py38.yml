@@ -1,0 +1,14 @@
+# Extraction environment: BAM -> CpG calls (src/fragpolar/vendor/extract_cpg_calls.py) and the PBMC package (07_pbmc)
+name: fragpolar-py38
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.8.5
+  - numpy=1.21.6
+  - pandas=1.4.2
+  - scipy=1.8.0
+  - pyarrow=17.0.0
+  - pysam=0.16.0.1
+  - matplotlib=3.7.5
+  - pyyaml=6.0.3

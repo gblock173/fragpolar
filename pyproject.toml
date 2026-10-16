@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fragpolar"
+version = "1.0.0"
+license = {text = "MIT"}
+readme = "README.md"
+description = "Fragment-level methylation state analysis of plasma cfDNA (manuscript analysis code)"
+requires-python = ">=3.8"
+dependencies = ["numpy", "pandas", "scipy", "pyarrow", "matplotlib", "pyyaml"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
