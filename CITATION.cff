@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "fragpolar"
+version: 1.0.0
+date-released: 2026-10-16
+abstract: "Analysis code for fragment-level methylation states of plasma cell-free DNA in hepatocellular carcinoma."
+license: MIT
+authors:
+  - family-names: Jeon
+    given-names: Yujin
